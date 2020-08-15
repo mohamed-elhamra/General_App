@@ -1,9 +1,11 @@
 package com.melhamra.api.services;
 
 import com.melhamra.api.dtos.UserDto;
+import com.melhamra.api.entities.AddressEntity;
 import com.melhamra.api.entities.UserEntity;
 import com.melhamra.api.repositories.UserRepository;
 import com.melhamra.api.utils.Utils;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,16 +38,23 @@ public class UserServiceImpl implements UserService{
 
         if(checkUser != null) throw new RuntimeException("User already exists!");
 
-        UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(userDto, userEntity);
+        ModelMapper modelMapper = new ModelMapper();
+        UserEntity userEntity = modelMapper.map(userDto, UserEntity.class);
 
-        userEntity.setUserID(utils.generateUserId(32));
+        userEntity.getContact().setContactId(utils.generateStringId(32));
+        userEntity.getContact().setUser(userEntity);
+        for (int i = 0; i < userEntity.getAddresses().size(); i++) {
+            AddressEntity addressEntity = userEntity.getAddresses().get(i);
+            addressEntity.setAddressId(utils.generateStringId(32));
+            addressEntity.setUser(userEntity);
+            userEntity.getAddresses().set(i, addressEntity);
+        }
+        userEntity.setUserID(utils.generateStringId(32));
         userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
 
         UserEntity newUser = userRepository.save(userEntity);
 
-        UserDto userDto1 = new UserDto();
-        BeanUtils.copyProperties(newUser, userDto1);
+        UserDto userDto1 = modelMapper.map(newUser, UserDto.class);
 
         return userDto1;
     }

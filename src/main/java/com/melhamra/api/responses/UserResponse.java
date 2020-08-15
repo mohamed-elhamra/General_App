@@ -2,6 +2,8 @@ package com.melhamra.api.responses;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class UserResponse {
 
@@ -9,5 +11,7 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private List<AddressResponse> addresses;
+    private ContactResponse contact;
 
 }

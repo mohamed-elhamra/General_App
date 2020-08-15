@@ -2,6 +2,8 @@ package com.melhamra.api.dtos;
 
 import lombok.Data;
 
+import java.util.List;
+
 
 @Data
 public class UserDto {
@@ -15,5 +17,6 @@ public class UserDto {
     private String encryptedPassword;
     private String emailVerificationToken;
     private Boolean emailVerificationStatus = false;
-
+    private List<AddressDto> addresses;
+    private ContactDto contact;
 }

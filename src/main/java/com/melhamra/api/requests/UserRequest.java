@@ -23,7 +23,9 @@ public class UserRequest {
     @Size(min = 8, max = 12, message = "Size should be between 8 and 12 character")
     private String password;
 
-    private List<AddressRequest> addressRequests;
+    private List<AddressRequest> addresses;
+
+    private ContactRequest contact;
 
 }
 

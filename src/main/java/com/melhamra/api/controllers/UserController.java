@@ -5,6 +5,7 @@ import com.melhamra.api.exceptions.UserException;
 import com.melhamra.api.requests.UserRequest;
 import com.melhamra.api.responses.UserResponse;
 import com.melhamra.api.services.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,13 +32,12 @@ public class UserController {
 
         if(userRequest.getFirstName().isEmpty()) throw new UserException("First name is required");
 
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userRequest, userDto);
+        ModelMapper modelMapper = new ModelMapper();
+        UserDto userDto = modelMapper.map(userRequest, UserDto.class);
 
         UserDto createdUser = userService.createUser(userDto);
 
-        UserResponse userResponse = new UserResponse();
-        BeanUtils.copyProperties(createdUser, userResponse);
+        UserResponse userResponse = modelMapper.map(createdUser, UserResponse.class);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
     }
