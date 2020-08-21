@@ -15,10 +15,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.ModelMap;
 
-import java.awt.print.Pageable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -29,7 +30,6 @@ public class UserServiceImpl implements UserService{
     private Utils utils;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-
 
     @Override
     public UserDto createUser(UserDto userDto) {
@@ -72,8 +72,7 @@ public class UserServiceImpl implements UserService{
     public UserDto getUserByUserId(String userId) {
         UserEntity userEntity = userRepository.findByUserID(userId);
         if(userEntity == null) throw new UsernameNotFoundException(userId);
-        UserDto userDto = new UserDto();
-        BeanUtils.copyProperties(userEntity, userDto);
+        UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
         return userDto;
     }
 
@@ -86,33 +85,38 @@ public class UserServiceImpl implements UserService{
         userEntity.setLastName(userDto.getLastName());
 
         UserEntity updatedUserEntity = userRepository.save(userEntity);
-        UserDto updatedUserDto = new UserDto();
-        BeanUtils.copyProperties(updatedUserEntity, updatedUserDto);
-
+        UserDto updatedUserDto = new ModelMapper().map(updatedUserEntity, UserDto.class);
         return updatedUserDto;
     }
 
     @Override
     public void deleteUser(String id) {
         UserDto userDto = getUserByUserId(id);
-        UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(userDto, userEntity);
+        UserEntity userEntity = new ModelMapper().map(userDto, UserEntity.class);
         userRepository.delete(userEntity);
     }
 
     @Override
-    public List<UserDto> getUsers(int page, int limit) {
+    public List<UserDto> getUsers(int page, int limit, String search) {
+
         if(page > 0) page -= 1;
 
-        List<UserDto> userDtoList = new ArrayList<>();
+        ModelMapper modelMapper = new ModelMapper();
         PageRequest pageable = PageRequest.of(page, limit);
-        Page<UserEntity> userEntityPage = userRepository.findAll(pageable);
+        Page<UserEntity> userEntityPage;
+
+        if (search.isEmpty() || search.isBlank()){
+            userEntityPage = userRepository.findAllUsers(pageable);
+        }else {
+            userEntityPage = userRepository.findAllUsersByCriteria(pageable, search);
+        }
+
         List<UserEntity> userEntityList = userEntityPage.getContent();
-        userEntityList.forEach(userEntity -> {
-            UserDto userDto = new UserDto();
-            BeanUtils.copyProperties(userEntity, userDto);
-            userDtoList.add(userDto);
-        });
+
+        List<UserDto> userDtoList = userEntityList.stream()
+                .map(user -> modelMapper.map(user, UserDto.class))
+                .collect(Collectors.toList());
+
         return userDtoList;
     }
 

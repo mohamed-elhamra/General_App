@@ -51,16 +51,20 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         String email = ((User) authResult.getPrincipal()).getUsername();
 
+        UserService userService = (UserService) SpringApplicationContext.getBean("userServiceImpl");
+        UserDto userEntity = userService.getUserByEmail(email);
+
         String token = Jwts.builder()
                 .setSubject(email)
+                .claim("id", userEntity.getUserID())
+                .claim("name", userEntity.getFirstName() + " " + userEntity.getLastName())
                 .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS512, SecurityConstants.TOKEN_SECRET)
                 .compact();
 
-        UserService userService = (UserService) SpringApplicationContext.getBean("userServiceImpl");
-        UserDto userEntity = userService.getUserByEmail(email);
-
         response.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
         response.addHeader("user_id", userEntity.getUserID());
+
+        response.getWriter().write("{\"token\": \""+token+"\", \"id\": \""+userEntity.getUserID()+"\"}");
     }
 }

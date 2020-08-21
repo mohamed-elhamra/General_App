@@ -26,6 +26,9 @@ public class UserEntity {
     private String email;
 
     @Column(nullable = false)
+    private Boolean admin = false;
+
+    @Column(nullable = false)
     private String encryptedPassword;
     private String emailVerificationToken;
 

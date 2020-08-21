@@ -13,12 +13,18 @@ public class UserRequest {
     @NotNull(message = "First name should not be null")
     @Size(min = 3, max = 50, message = "Size should be between 3 and 50 character")
     private String firstName;
+
     @NotNull(message = "Last name should not be null")
     @Size(min = 3, max = 50, message = "Size should be between 3 and 50 character")
     private String lastName;
+
     @NotNull(message = "Email should not be null")
     @Email(message = "Email format is incorrect")
     private String email;
+
+
+    private Boolean admin;
+
     @NotNull(message = "Password name should not be null")
     @Size(min = 8, max = 12, message = "Size should be between 8 and 12 character")
     private String password;
